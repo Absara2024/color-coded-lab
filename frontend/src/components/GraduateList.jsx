@@ -49,7 +49,7 @@ const GraduateList = ({
       >
         <div className="flex items-center gap-2">
           <Users size={20} className="text-blue-600" />
-          <span className="font-semibold text-white">{selectedSchool || 'Select School'}</span>
+          <span className="font-bold text-white">{selectedSchool || 'Select School'}</span>
           </div>
         {isExpanded ? (
           <ChevronDown size={20} className="text-white" />
@@ -65,8 +65,8 @@ const GraduateList = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="rounded-b-lg bg-neutral-800/70 flex flex-col" // flex container
-            style={{ maxHeight: 'calc(4 * 115px + 40px)' }}
+            className="rounded-b-lg bg-neutral-800/70 flex flex-col"
+            style={{ maxHeight: 'calc(3 * 115px + 40px)' }}
           >
             <div className="overflow-y-auto">
               <div className="">

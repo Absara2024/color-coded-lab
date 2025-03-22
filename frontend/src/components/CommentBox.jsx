@@ -50,22 +50,6 @@ const CommentBox = () => {
         }
     };
 
-    const removeComment = async (commentId) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/user-comments/${commentId}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                setComments(prevComments => prevComments.filter(comment => comment._id !== commentId));
-            } else {
-                console.error('Failed to delete comment:', response.status);
-            }
-        } catch (error) {
-            console.error('Error deleting comment:', error);
-        }
-    };
-
     return (
         <div className="fixed bottom-20 left-0 right-0 px-4">
             <AnimatePresence>
@@ -75,13 +59,13 @@ const CommentBox = () => {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="max-w-2xl mx-auto mb-4"
+                        className="max-w-md mx-auto mb-4"
                     >
-                        <div className="max-h-60 overflow-y-auto">
+                        <div className="max-h-40 overflow-y-auto">
                             {comments.length === 0 ? (
-                                <p className="text-center py-4 text-gray-500">No comments yet</p>
+                                <p className="text-center py-2 text-gray-500">No comments yet</p>
                             ) : (
-                                <CommentList comments={comments} onRemoveComment={removeComment} />
+                                <CommentList comments={comments} />
                             )}
                         </div>
                     </motion.div>
@@ -91,26 +75,26 @@ const CommentBox = () => {
             <div className="flex justify-center mb-2">
                 <button
                     onClick={() => setShowComments(!showComments)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-black bg-opacity-30 text-white transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black bg-opacity-30 text-white transition-all"
                 >
-                    {showComments ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                    {showComments ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
                 </button>
             </div>
 
-            <div className="max-w-2xl mx-auto mb-4">
-                <form onSubmit={handleSubmit} className="flex items-center"> {/* Added items-center */}
+            <div className="max-w-md mx-auto mb-4">
+                <form onSubmit={handleSubmit} className="flex items-center">
                     <input
                         type="text"
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="Share your thoughts..."
-                        className="flex-1 px-4 py-2 rounded-full bg-white bg-opacity-90 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 px-3 py-1.5 rounded-full bg-white bg-opacity-90 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     />
                     <button
                         type="submit"
-                        className="ml-[-40px] p-2 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors z-10" // Added negative margin and z-index
+                        className="ml-[-30px] p-1.5 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors z-10"
                     >
-                        <Send size={20} />
+                        <Send size={16} />
                     </button>
                 </form>
             </div>
@@ -118,28 +102,22 @@ const CommentBox = () => {
     );
 };
 
-const CommentList = ({ comments, onRemoveComment }) => {
+const CommentList = ({ comments }) => {
     return (
         <div
-            className="space-y-2 p-10 bg-neutral-800/60 rounded-lg "
+            className="space-y-1 p-6 bg-neutral-800/60 rounded-lg "
         >
             {comments.map((comment) => (
                 <motion.div
                     key={comment._id}
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 flex justify-between items-start bg-transparent rounded-lg shadow-md border border-gray-300"
+                    className="p-3 flex justify-between items-start bg-transparent rounded-lg shadow-md border border-gray-300"
                 >
                     <div>
-                        <p className="text-white">{comment.message}</p>
-                        <span className="text-xs text-white ml-4 opacity-70">{new Date(comment.createdAt).toLocaleString()}</span>
+                        <p className="text-white text-sm">{comment.message}</p>
+                        <span className="text-[0.6rem] text-white ml-2 opacity-70">{new Date(comment.createdAt).toLocaleString()}</span>
                     </div>
-                    <button
-                        onClick={() => onRemoveComment(comment._id)}
-                        className="text-red-500 hover:text-red-700"
-                    >
-                        Remove
-                    </button>
                 </motion.div>
             ))}
         </div>
