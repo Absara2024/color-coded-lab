@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ImageSlider = () => {
-  // Sample images - replace with your actual images or fetch from API
   const images = [
-    { url: 'https://via.placeholder.com/1920x1080/007bff/ffffff', alt: 'Slide 1' },
-    { url: 'https://via.placeholder.com/1920x1080/28a745/ffffff', alt: 'Slide 2' },
-    { url: 'https://via.placeholder.com/1920x1080/dc3545/ffffff', alt: 'Slide 3' },
+    { url: 'graduates.jpg', alt: 'Slide 1' },
+    { url: 'person.jpg', alt: 'Slide 2' },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,7 +43,6 @@ const ImageSlider = () => {
     });
   };
 
-  // Auto slide every 5 seconds
   React.useEffect(() => {
     const timer = setInterval(() => {
       paginate(1);
@@ -90,7 +87,6 @@ const ImageSlider = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Buttons */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
         <button
           onClick={() => paginate(-1)}
@@ -98,8 +94,7 @@ const ImageSlider = () => {
         >
           <ChevronLeft size={24} />
         </button>
-        
-        {/* Dots indicator */}
+
         <div className="flex space-x-2">
           {images.map((_, index) => (
             <button
