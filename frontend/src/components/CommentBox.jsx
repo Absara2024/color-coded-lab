@@ -81,7 +81,7 @@ const CommentBox = () => {
                 </button>
             </div>
 
-            <div className="max-w-md mx-auto mb-4">
+            <div className="max-w-sm mx-auto mb-4">
                 <form onSubmit={handleSubmit} className="flex items-center">
                     <input
                         type="text"
