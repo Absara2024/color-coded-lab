@@ -3,9 +3,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ImageSlider = () => {
+
   const images = [
-    { url: 'graduates.jpg', alt: 'Slide 1' },
-    { url: 'person.jpg', alt: 'Slide 2' },
+    { url: '/images/class.jpg', alt: 'Classroom' },
+    { url: '/images/high2.jpg', alt: 'high2' },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -14,23 +15,18 @@ const ImageSlider = () => {
   const slideVariants = {
     enter: (direction) => ({
       x: direction > 0 ? 1000 : -1000,
-      opacity: 0
+      opacity: 0,
     }),
     center: {
       zIndex: 1,
       x: 0,
-      opacity: 1
+      opacity: 1,
     },
     exit: (direction) => ({
       zIndex: 0,
       x: direction < 0 ? 1000 : -1000,
-      opacity: 0
-    })
-  };
-
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset, velocity) => {
-    return Math.abs(offset) * velocity;
+      opacity: 0,
+    }),
   };
 
   const paginate = (newDirection) => {
@@ -43,7 +39,7 @@ const ImageSlider = () => {
     });
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       paginate(1);
     }, 5000);
@@ -62,20 +58,8 @@ const ImageSlider = () => {
           animate="center"
           exit="exit"
           transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 }
-          }}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={1}
-          onDragEnd={(e, { offset, velocity }) => {
-            const swipe = swipePower(offset.x, velocity.x);
-
-            if (swipe < -swipeConfidenceThreshold) {
-              paginate(1);
-            } else if (swipe > swipeConfidenceThreshold) {
-              paginate(-1);
-            }
+            x: { type: 'spring', stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 },
           }}
           className="absolute w-full h-full"
         >
@@ -83,6 +67,7 @@ const ImageSlider = () => {
             src={images[currentIndex].url}
             alt={images[currentIndex].alt}
             className="w-full h-full object-cover"
+            draggable={false}
           />
         </motion.div>
       </AnimatePresence>
@@ -91,6 +76,7 @@ const ImageSlider = () => {
         <button
           onClick={() => paginate(-1)}
           className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all"
+          aria-label="Previous Slide"
         >
           <ChevronLeft size={24} />
         </button>
@@ -106,6 +92,7 @@ const ImageSlider = () => {
               className={`w-2 h-2 rounded-full transition-all ${
                 index === currentIndex ? 'bg-white' : 'bg-white bg-opacity-50'
               }`}
+              aria-label={`Slide ${index + 1}`}
             />
           ))}
         </div>
@@ -113,6 +100,7 @@ const ImageSlider = () => {
         <button
           onClick={() => paginate(1)}
           className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all"
+          aria-label="Next Slide"
         >
           <ChevronRight size={24} />
         </button>

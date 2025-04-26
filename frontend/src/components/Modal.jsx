@@ -1,123 +1,194 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react'; 
 
-const Modal = ({ isOpen, onClose }) => {
-  const [formData, setFormData] = React.useState({
+const Modal = ({ isOpen, onClose, selectedSchool, setGraduates }) => {
+  const [formData, setFormData] = useState({
     name: '',
     graduationYear: '',
-    school: '',
-    cclYear: ''
+    cclYear: '',
+    photoUrl: '',  
+    location: '',  
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const [imageFile, setImageFile] = useState(null);  
+  const [preview, setPreview] = useState(null);      
+  const [isSubmitting, setIsSubmitting] = useState(false);  
+  const [error, setError] = useState(null);  
+
+  useEffect(() => {
+    if (selectedSchool) {
+      setFormData((prev) => ({ ...prev, location: selectedSchool }));
+    }
+  }, [selectedSchool]);
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result);  
+      reader.readAsDataURL(file); 
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      const response = await fetch('http://localhost:5000/api/graduation-records', {
+      let uploadedImageUrl = '';
+
+      if (imageFile) {
+        const formImageData = new FormData();
+        formImageData.append('image', imageFile);
+
+        const uploadRes = await fetch('http://localhost:5005/api/upload', {
+          method: 'POST',
+          body: formImageData,
+        });
+
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok || !uploadData.imageUrl) {
+          throw new Error(uploadData.message || 'Image upload failed');
+        }
+
+        uploadedImageUrl = uploadData.imageUrl;
+      }
+
+      const response = await fetch('http://localhost:5005/api/graduationRecords', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          schoolName: selectedSchool,  
+          photoUrl: uploadedImageUrl,  
+        }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        onClose();
+        setGraduates((prev) => [...prev, data.graduate]);  
+        onClose();  
       } else {
-        console.error('Failed to add graduate:', response.status);
+        setError(data.message || 'Failed to add graduate');
       }
-    } catch (error) {
-      console.error('Error adding graduate:', error);
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Submission failed: ' + err.message);
+    } finally {
+      setIsSubmitting(false);  
     }
   };
 
-  if (!isOpen) return null;
-
-    const handleClose = (e) => {
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
-    };
-
+  if (!isOpen) return null;  
 
   return (
+    <div
+      className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center p-3"
+      onClick={(e) => e.target === e.currentTarget && onClose()}  
+    >
       <div
-          className={`fixed inset-0 z-50 bg-neutral-800/70 flex justify-center items-center overflow-y-auto p-3 ${
-              isOpen ? "visible opacity-100" : "invisible opacity-0"
-          } transition-opacity duration-300`}
-          onClick={handleClose}
+        className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 relative"
+        onClick={(e) => e.stopPropagation()} 
       >
-          <div
-              className={`max-w-[500px] w-full transform duration-300 bg-white rounded-lg ${
-                  isOpen ? "scale-100 opacity-100" : "scale-90 opacity-0"
-              } flex justify-center items-center p-6`}
-              onClick={(e) => e.stopPropagation()}
-          >
-              <div className="w-full">
-                  <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-bold">Add Yourself</h2>
-                      <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                          <X size={24} />
-                      </button>
-                  </div>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                      <div>
-                          <label className="block text-sm font-medium text-gray-700">Name</label>
-                          <input
-                              type="text"
-                              name="name"
-                              value={formData.name}
-                              onChange={handleChange}
-                              className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-                              required
-                          />
-                      </div>
-                      <div>
-                          <label className="block text-sm font-medium text-gray-700">Graduation Year</label>
-                          <input
-                              type="number"
-                              name="graduationYear"
-                              value={formData.graduationYear}
-                              onChange={handleChange}
-                              className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-                              required
-                          />
-                      </div>
-                      <div>
-                          <label className="block text-sm font-medium text-gray-700">School</label>
-                          <input
-                              type="text"
-                              name="school"
-                              value={formData.school}
-                              onChange={handleChange}
-                              className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-                              required
-                          />
-                      </div>
-                      <div>
-                          <label className="block text-sm font-medium text-gray-700">CCL Year</label>
-                          <input
-                              type="number"
-                              name="cclYear"
-                              value={formData.cclYear}
-                              onChange={handleChange}
-                              className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-                              required
-                          />
-                      </div>
-                      <button
-                          type="submit"
-                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-                      >
-                          Submit
-                      </button>
-                  </form>
-              </div>
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-600 hover:text-red-600"
+        >
+          <X size={24} /> 
+        </button>
+
+        <h2 className="text-xl font-bold mb-4">Add Yourself</h2>
+
+        {error && <div className="text-red-600 text-sm mb-3">{error}</div>} 
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+  
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+
+          <input
+            type="number"
+            name="graduationYear"
+            placeholder="Graduation Year"
+            value={formData.graduationYear}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+
+          <div className="w-full border p-2 rounded bg-gray-100">
+            {formData.location || 'School Location'}
           </div>
+
+          <input
+            type="number"
+            name="cclYear"
+            placeholder="CCL Year"
+            value={formData.cclYear}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Upload Photo (Optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full"
+            />
+            {preview && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-32 h-32 object-cover mt-2 rounded-md border"
+              />
+            )}
+          </div>
+
+          <div className="flex justify-between items-center pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
   );
 };
 
