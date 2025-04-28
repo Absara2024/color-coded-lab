@@ -8,12 +8,12 @@ router.get("/", async (req, res) => {
   try {
     const graduationRecords = await Graduate.find().populate("school");
 
-    const modifiedGraduationRecords = graduationRecords.map(record => ({
+    const modifiedGraduationRecords = graduationRecords.map((record) => ({
       ...record.toObject(),
       school: {
         ...record.school.toObject(),
-        city: record.school.city || 'Unknown City',  
-      }
+        location: record.school.location || "Unknown Location",
+      },
     }));
 
     res.status(200).json({ graduationRecords: modifiedGraduationRecords });
@@ -36,7 +36,7 @@ router.get("/:id", async (req, res) => {
         ...graduationRecord.toObject(),
         school: {
           ...graduationRecord.school.toObject(),
-          city: graduationRecord.school.city || 'Unknown City', 
+          location: graduationRecord.school.location || "Unknown Location",
         },
       },
     });
@@ -78,7 +78,7 @@ router.post("/", async (req, res) => {
         ...populatedGraduate.toObject(),
         school: {
           ...populatedGraduate.school.toObject(),
-          city: populatedGraduate.school.city || 'Unknown City', 
+          location: populatedGraduate.school.location || "Unknown Location", 
         },
       },
     });
@@ -90,7 +90,6 @@ router.post("/", async (req, res) => {
 
 router.get("/school/:schoolName", async (req, res) => {
   try {
-    
     const school = await School.findOne({
       name: { $regex: new RegExp("^" + req.params.schoolName.trim() + "$", "i") },
     });
@@ -105,11 +104,11 @@ router.get("/school/:schoolName", async (req, res) => {
       return res.status(404).json({ message: "No graduates found for this school" });
     }
 
-    const modifiedGraduates = graduates.map(graduate => ({
+    const modifiedGraduates = graduates.map((graduate) => ({
       ...graduate.toObject(),
       school: {
         ...graduate.school.toObject(),
-        city: graduate.school.city || 'Unknown City', 
+        location: graduate.school.location || "Unknown Location", 
       },
     }));
 

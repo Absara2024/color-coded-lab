@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 const Sidebar = ({ selectedSchool, onSchoolSelect, isLoading }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [schools, setSchools] = useState([]);
+  const [filteredSchools, setFilteredSchools] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -13,6 +16,7 @@ const Sidebar = ({ selectedSchool, onSchoolSelect, isLoading }) => {
         const response = await fetch("http://localhost:5005/api/schools");
         const data = await response.json();
         setSchools(data);
+        setFilteredSchools(data); 
       } catch (err) {
         setError("Failed to load schools.");
       }
@@ -20,6 +24,18 @@ const Sidebar = ({ selectedSchool, onSchoolSelect, isLoading }) => {
 
     fetchSchools();
   }, []);
+
+  useEffect(() => {
+    const filtered = schools.filter((school) => {
+      const name = school.name ? school.name.toLowerCase() : '';
+      const location = school.location ? school.location.toLowerCase() : '';
+      return (
+        name.includes(searchQuery.toLowerCase()) &&
+        location.includes(locationQuery.toLowerCase())
+      );
+    });
+    setFilteredSchools(filtered);
+  }, [searchQuery, locationQuery, schools]);
 
   return (
     <>
@@ -63,24 +79,52 @@ const Sidebar = ({ selectedSchool, onSchoolSelect, isLoading }) => {
               ) : error ? (
                 <p className="text-red-500">{error}</p>
               ) : (
-                <div className="space-y-2">
-                  {schools.map((school) => (
-                    <button
-                      key={school._id}
-                      onClick={() => {
-                        onSchoolSelect(school); 
-                        setIsOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 rounded ${
-                        selectedSchool === school.name
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 hover:bg-gray-200"
-                      }`}
-                      aria-label={`Select ${school.name}`}
-                    >
-                      {school.name}
-                    </button>
-                  ))}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold">Search School</label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-4 py-2 mt-1 border rounded-md"
+                      placeholder="Search by school name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold">Search Location</label>
+                    <input
+                      type="text"
+                      value={locationQuery}
+                      onChange={(e) => setLocationQuery(e.target.value)}
+                      className="w-full px-4 py-2 mt-1 border rounded-md"
+                      placeholder="Search by school location"
+                    />
+                  </div>
+
+                  <div className="space-y-2 mt-4">
+                    {filteredSchools.length === 0 ? (
+                      <p>No schools found</p>
+                    ) : (
+                      filteredSchools.map((school) => (
+                        <button
+                          key={school._id}
+                          onClick={() => {
+                            onSchoolSelect(school);
+                            setIsOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 rounded ${
+                            selectedSchool === school.name
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                          aria-label={`Select ${school.name}`}
+                        >
+                          {school.name}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
             </motion.div>
